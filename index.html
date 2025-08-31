@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TFT Portable Forge Odds</title>
+<style>
+body {font-family: Arial,sans-serif; background:#121212; color:#e0e0e0; margin:0; padding:20px;}
+.container {max-width:950px; width:95%; margin:auto; background:#1e1e1e; padding:20px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.6);}
+h1{text-align:center;margin-bottom:5px;}
+h2{text-align:left;font-size:1.2em;font-weight:normal;margin-top:0;color:#cccccc;}
+.items {display:grid; grid-template-columns:repeat(auto-fit,minmax(50px,1fr)); gap:10px; margin:20px 0;}
+.item {width:100%; aspect-ratio:1/1; border-radius:8px; cursor:pointer; border:2px solid transparent; overflow:hidden; transition:border 0.2s, transform 0.1s, box-shadow 0.2s, opacity 0.2s;}
+.item.selected {border-color:#FFD700; transform:scale(1.05); box-shadow:0 0 12px #FFD700;}
+.item.disabled{opacity:0.4; cursor:not-allowed;}
+.item img{width:100%; height:100%; object-fit:cover; display:block;}
+.receipt {margin-top:20px; background:#2a2a2a; padding:10px; border-radius:8px; min-height:50px; display:flex; align-items:center; flex-wrap:wrap; gap:6px;}
+.receipt img{width:30px; height:30px; border-radius:4px; object-fit:cover; border:1px solid #555; cursor:pointer;}
+label{margin:10px 0; display:inline-flex; align-items:center; cursor:pointer; position:relative;}
+input[type="checkbox"]{margin-right:6px;}
+.tooltip {position:relative; display:inline-block; cursor:help; margin-left:5px;}
+.tooltip span {visibility:hidden; width:260px; background-color:#333; color:#fff; text-align:center; border-radius:6px; padding:6px; position:absolute; z-index:10; top:-5px; left:105%; opacity:0; transition:opacity 0.2s;}
+.tooltip:hover span {visibility:visible; opacity:1;}
+button{padding:10px 20px; font-size:16px; background:#4a90e2; border:none; color:white; border-radius:6px; cursor:pointer; margin-top:10px;}
+button:hover{background:#357abd;}
+.result-container{margin-top:20px; text-align:center;}
+.result-text{font-size:18px;}
+.result-perc{font-size:22px; font-weight:bold; margin-top:5px;}
+.units-container{margin-top:10px;}
+.units-container span{display:block; margin-bottom:5px;}
+.unit-icons{display:flex; gap:10px; flex-wrap:wrap;}
+.unit-icons img{width:40px; height:40px; border-radius:6px; cursor:pointer; border:2px solid transparent; transition:transform 0.1s, border 0.2s;}
+.unit-icons img.selected{border-color:#FFD700; transform:scale(1.05);}
+.unit-icons img:hover{transform:scale(1.1);}
+.top-controls{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:10px;}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>TFT Portable Forge Odds</h1>
+<h2>Choose your artifacts:</h2>
+
+<div class="items" id="items"></div>
+
+<div class="units-container">
+  <span>You may also choose a unit:</span>
+  <div class="unit-icons">
+    <img src="https://ap.tft.tools/img/dc15/face/tft15_yuumi.jpg?w=40" title="Yuumi" id="unit-Yuumi" onclick="toggleUnit('Yuumi')">
+    <img src="https://ap.tft.tools/img/dc15/face/tft15_ksante.jpg?w=40" title="K'Sante" id="unit-KSante" onclick="toggleUnit('KSante')">
+    <img src="https://ap.tft.tools/img/dc15/face/tft15_leona.jpg?w=40" title="Leona" id="unit-Leona" onclick="toggleUnit('Leona')">
+  </div>
+</div>
+
+<div class="top-controls">
+  <label>
+    <input type="checkbox" id="stage4">
+    Stage 4
+  </label>
+  <span class="tooltip">ℹ️
+    <span>After Stage 4, gold-generating items are not available, slightly reducing the pool.</span>
+  </span>
+</div>
+
+<div class="receipt" id="receipt"><i>No items selected</i></div>
+
+<button onclick="clearAll()">Clear All</button>
+
+<div class="result-container">
+  <div class="result-text">Your odds of hitting 1 (or more) of these items are...</div>
+  <div class="result-perc" id="result">???</div>
+</div>
+</div>
+
+<script>
+const artifactsList = [
+  "Fishbones","Flickerblades","Manazane","SpectralCutlass","Zhonyas",
+  "BlightingJewel","DeathfireGrasp","IndomitableGauntlet","StatikkShiv",
+  "LudensTempest","TrickstersGlass","SnipersFocus","InnervatingLocket",
+  "Mittens","UnendingDespair","ProwlersClaw","LightshieldCrest",
+  "DeathsDance","WitsEnd","HorizonFocus","TitanicHydra",
+  "Hullcrusher","LichBane","RapidFirecannon","SuspiciousTrenchCoat",
+  "TrinityForce","SeekersArmguard","TalismanOfAscension","SilvermereDawn",
+  "Dawncore","MogulsMail","GamblersBlade","TheCollector"
+];
+
+const goldItems = ["MogulsMail","GamblersBlade","TheCollector"];
+
+const artifacts = {
+  "Fishbones":"https://cdn.lolchess.gg/upload/images/items/Fishbones_1714028339-tft_item_artifact_fishbones.png",
+  "Flickerblades":"https://cdn.lolchess.gg/upload/images/items/Flickerblade_1748484851-%EB%AA%85%EB%A9%B8%EA%B2%80.jpg",
+  "Manazane":"https://cdn.lolchess.gg/upload/images/items/OrnnItemMuramana_1644815872.png",
+  "SpectralCutlass":"https://cdn.lolchess.gg/upload/images/items/SpectralCutlass_1714029856-tft_item_artifact_spectralcutlass.png",
+  "Zhonyas":"https://cdn.lolchess.gg/upload/images/items/OrnnItemZhonyasHourglass_1644815918.png",
+  "BlightingJewel":"https://cdn.lolchess.gg/upload/images/items/BlightingJewel_1714029927-tft_item_artifact_blightingjewel.png",
+  "DeathfireGrasp":"https://cdn.lolchess.gg/upload/images/items/DeathfireGrasp_1710227752-tft9_ornnitem_deathfiregrasp.png",
+  "IndomitableGauntlet":"https://cdn.lolchess.gg/upload/images/items/IndomitableGauntlet_1748484841-%EB%B6%88%EA%B5%B4.jpg",
+  "StatikkShiv":"https://cdn.lolchess.gg/upload/images/items/StatikkShiv_1748484859-%EC%8A%A4%ED%83%9C%ED%8B%B1.jpg",
+  "LudensTempest":"https://cdn.lolchess.gg/upload/images/items/LudensTempest_1714029478-tft_item_artifact_ludenstempest.png",
+  "TrickstersGlass":"https://cdn.lolchess.gg/upload/images/items/TrickstersGlass_1710227727-tft9_ornnitem_trickstersglass.png",
+  "SnipersFocus":"https://cdn.lolchess.gg/upload/images/items/SnipersFocus_1686308390-tft9_ornnitem_snipersfocus.tft_set9.png",
+  "InnervatingLocket":"https://cdn.lolchess.gg/upload/images/items/InnervatingLocket_1714029384-tft_item_artifact_innervatinglocket.png",
+  "Mittens":"https://cdn.lolchess.gg/upload/images/items/Mittens_1714029155-tft_item_artifact_mittens.png",
+  "UnendingDespair":"https://cdn.lolchess.gg/upload/images/items/UnendingDespair_1714029241-tft_item_artifact_unendingdespair.png",
+  "ProwlersClaw":"https://cdn.lolchess.gg/upload/images/items/ProwlersClaw_1714029686-tft_item_artifact_prowlersclaw.png",
+  "LightshieldCrest":"https://cdn.lolchess.gg/upload/images/items/LightshieldCrest_1714030338-tft_item_artifact_lightshieldcrest.png",
+  "DeathsDance":"https://cdn.lolchess.gg/upload/images/items/OrnnItemDeathsDance_1644815852.png",
+  "WitsEnd":"https://cdn.lolchess.gg/upload/images/items/WitsEnd_1714029999-tft_item_artifact_witsend.png",
+  "HorizonFocus":"https://cdn.lolchess.gg/upload/images/items/HorizonFocus_1714029051-tft_item_artifact_horizonfocus.png",
+  "TitanicHydra":"https://cdn.lolchess.gg/upload/images/items/TitanicHydra_1748484828-%EA%B1%B0%EB%8C%80%ED%95%9C%ED%9E%88%EB%93%9C%EB%9D%BC.jpg",
+  "Hullcrusher":"https://cdn.lolchess.gg/upload/images/items/Hullcrusher_1710227062-tft9_ornnitem_hullbreaker.png",
+  "LichBane":"https://cdn.lolchess.gg/upload/images/items/LichBane_1714030255-tft_item_artifact_lichbane.png",
+  "RapidFirecannon":"https://cdn.lolchess.gg/upload/images/items/RapidFirecannon_1714029325-tft_item_artifact_rapidfirecannon.png",
+  "SuspiciousTrenchCoat":"https://cdn.lolchess.gg/upload/images/items/SuspiciousTrenchCoat_1714027929-tft_item_artifact_suspicioustrenchcoat.png",
+  "TrinityForce":"https://cdn.lolchess.gg/upload/images/items/OrnnItemTrinityForce_1644815912.png",
+  "SeekersArmguard":"https://cdn.lolchess.gg/upload/images/items/SeekersArmguard_1714030423-tft_item_artifact_seekersarmguard.png",
+  "TalismanOfAscension":"https://cdn.lolchess.gg/upload/images/items/TalismanOfAscension_1714028034-tft_item_artifact_talismanofascension.png",
+  "SilvermereDawn":"https://cdn.lolchess.gg/upload/images/items/SilvermereDawn_1714029565-tft_item_artifact_silvermeredawn.png",
+  "Dawncore":"https://cdn.lolchess.gg/upload/images/items/PBEDawncore_1752038401-Dawncore.png",
+  "MogulsMail":"https://cdn.lolchess.gg/upload/images/items/MogulsMail_1693364912-moguls_mail.png",
+  "GamblersBlade":"https://cdn.lolchess.gg/upload/images/items/GamblersBlade_1699930369-tft10_gamblersblade.tft_set10%20(1).png",
+  "TheCollector":"https://cdn.lolchess.gg/upload/images/items/OrnnItemTheCollector_1644815905.png"
+};
+
+const selected=new Set();
+const unitSelected=new Set();
+const itemsDiv=document.getElementById("items");
+const receiptDiv=document.getElementById("receipt");
+const stage4Checkbox=document.getElementById("stage4");
+const resultPerc=document.getElementById("result");
+
+// Units
+const units={
+  "Yuumi":["Manazane","Zhonyas","DeathfireGrasp","BlightingJewel","Dawncore"],
+  "KSante":["MogulsMail","Hullcrusher","TrickstersGlass","LightshieldCrest","IndomitableGauntlet"],
+  "Leona":["InnervatingLocket","MogulsMail","LightshieldCrest","UnendingDespair","Hullcrusher","IndomitableGauntlet"]
+};
+
+let hasCalculated=false;
+
+// Render artifacts
+artifactsList.forEach(name=>{
+  const div=document.createElement("div");
+  div.classList.add("item");
+  div.dataset.name=name;
+  const img=document.createElement("img");
+  img.src=artifacts[name];
+  img.alt=name;
+  div.appendChild(img);
+  div.addEventListener("click",()=>{
+    if(div.classList.contains("disabled")) return;
+    if(selected.has(name)){
+      selected.delete(name);
+      div.classList.remove("selected");
+    } else {
+      selected.add(name);
+      div.classList.add("selected");
+    }
+    updateReceipt();
+    calculateOdds();
+  });
+  itemsDiv.appendChild(div);
+});
+
+// Update receipt
+function updateReceipt(){
+  receiptDiv.innerHTML="";
+  if(selected.size===0){
+    receiptDiv.innerHTML="<i>No items selected</i>";
+    return;
+  }
+  selected.forEach(name=>{
+    const img=document.createElement("img");
+    img.src=artifacts[name];
+    img.title="Click to remove";
+    img.addEventListener("click",()=>{
+      selected.delete(name);
+      document.querySelectorAll(".item").forEach(div=>{
+        if(div.dataset.name===name){
+          let stillUsed=false;
+          unitSelected.forEach(u=>{
+            if(units[u].includes(name)) stillUsed=true;
+          });
+          if(!stillUsed) div.classList.remove("selected");
+        }
+      });
+      updateReceipt();
+      calculateOdds();
+    });
+    receiptDiv.appendChild(img);
+  });
+}
+
+// Clear all
+function clearAll(){
+  selected.clear();
+  unitSelected.clear();
+  document.querySelectorAll(".item").forEach(div=>div.classList.remove("selected"));
+  document.querySelectorAll(".unit-icons img").forEach(u=>u.classList.remove("selected"));
+  updateReceipt();
+  calculateOdds();
+}
+
+// Stage 4 toggle
+stage4Checkbox.addEventListener("change",()=>{
+  document.querySelectorAll(".item").forEach(div=>{
+    if(goldItems.includes(div.dataset.name)){
+      if(stage4Checkbox.checked){
+        div.classList.add("disabled");
+        if(selected.has(div.dataset.name)){
+          selected.delete(div.dataset.name);
+          div.classList.remove("selected");
+        }
+      } else {
+        div.classList.remove("disabled");
+      }
+    }
+  });
+  unitSelected.forEach(u=>applyUnitItems(u));
+  updateReceipt();
+  if(hasCalculated) calculateOdds();
+});
+
+// Units
+function toggleUnit(unit){
+  const img=document.getElementById("unit-"+unit);
+  if(unitSelected.has(unit)){
+    unitSelected.delete(unit);
+    img.classList.remove("selected");
+    units[unit].forEach(it=>{
+      let stillUsed=false;
+      unitSelected.forEach(u=>{
+        if(units[u].includes(it)) stillUsed=true;
+      });
+      if(!stillUsed && selected.has(it)){
+        selected.delete(it);
+        document.querySelectorAll(".item").forEach(div=>{
+          if(div.dataset.name===it) div.classList.remove("selected");
+        });
+      }
+    });
+  } else{
+    unitSelected.add(unit);
+    img.classList.add("selected");
+    applyUnitItems(unit);
+  }
+  updateReceipt();
+  calculateOdds();
+}
+
+function applyUnitItems(unit){
+  units[unit].forEach(it=>{
+    if(stage4Checkbox.checked && goldItems.includes(it)) return;
+    selected.add(it);
+    document.querySelectorAll(".item").forEach(div=>{
+      if(div.dataset.name===it) div.classList.add("selected");
+    });
+  });
+}
+
+// Odds calculation
+function factorial(n){if(n<0)return 0; let r=1; for(let i=2;i<=n;i++)r*=i; return r;}
+function combination(n,k){return k>n||k<0?0:factorial(n)/(factorial(k)*factorial(n-k));}
+
+function calculateOdds(){
+  hasCalculated=true;
+  const total=artifactsList.length - (stage4Checkbox.checked?goldItems.length:0);
+  const good=selected.size;
+  const choices=4;
+  if(good<=0||good>total){
+    resultPerc.textContent="???";
+    return;
+  }
+  const totalC=combination(total,choices);
+  const badC=combination(total-good,choices);
+  const prob=1-(badC/totalC);
+
+  const red=[255,76,76],yellow=[255,217,61],green=[76,175,80];
+  let color;
+  if(prob<0.5){
+    const t=prob/0.5;
+    color=`rgb(${Math.round(red[0]+t*(yellow[0]-red[0]))},${Math.round(red[1]+t*(yellow[1]-red[1]))},${Math.round(red[2]+t*(yellow[2]-red[2]))})`;
+  } else {
+    const t=(prob-0.5)/0.5;
+    color=`rgb(${Math.round(yellow[0]+t*(green[0]-yellow[0]))},${Math.round(yellow[1]+t*(green[1]-yellow[1]))},${Math.round(yellow[2]+t*(green[2]-yellow[2]))})`;
+  }
+  resultPerc.innerHTML=`<b style="color:${color}">${(prob*100).toFixed(2)}%</b>`;
+}
+</script>
+</body>
+</html>
