@@ -17,33 +17,56 @@
       display:flex;
       flex-wrap:wrap;
       justify-content:center;
-      gap:20px;
+      gap:25px;
       margin-top:30px;
     }
+
     .tool-card {
-      background:#161b22;
+      background: linear-gradient(145deg, #1b2730, #2c3e50);
       border:1px solid #30363d;
-      border-radius:12px;
-      width:220px;
+      border-radius:16px;
+      width:240px;
       padding:20px;
       cursor:pointer;
-      transition:0.25s;
+      transition:0.3s;
       text-align:left;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+      position: relative;
+      overflow: hidden;
     }
+
+    .tool-card::before {
+      content:'';
+      position:absolute;
+      top:0; left:0; right:0; bottom:0;
+      background: linear-gradient(120deg, rgba(88,166,255,0.2), rgba(155,89,182,0.2));
+      opacity:0;
+      transition:0.4s;
+      border-radius:16px;
+    }
+
+    .tool-card:hover::before {
+      opacity:1;
+    }
+
     .tool-card:hover {
-      background:#1f2a36;
-      box-shadow:0 4px 15px rgba(88,166,255,0.5);
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(88,166,255,0.6);
     }
+
     .tool-card h2 {
       margin:0 0 10px 0;
       color:#58a6ff;
-      font-size:1.2rem;
+      font-size:1.25rem;
+      font-weight:bold;
     }
+
     .tool-card p {
       font-size:0.9rem;
       color:#8b949e;
       margin:0;
     }
+
     a.tool-link { text-decoration:none; color:inherit; }
   </style>
 </head>
@@ -52,17 +75,16 @@
   <div class="cards-container">
     <a href="crystal_tool.html" class="tool-link">
       <div class="tool-card">
-        <h2>Double Down Calculator</h2>
+        <h2>Crystal Gambit Tool</h2>
         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
       </div>
     </a>
     <a href="ornn_tool.html" class="tool-link">
       <div class="tool-card">
-        <h2>Other Tool</h2>
+        <h2>Ornn Artifact Tool</h2>
         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
       </div>
     </a>
   </div>
 </body>
 </html>
-
