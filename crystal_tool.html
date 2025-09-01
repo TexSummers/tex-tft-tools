@@ -2,224 +2,296 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Crystal Gambit Tool</title>
+  <title>Should you Double Down?</title>
   <style>
-    body { 
-      background:#121212; 
-      color:#e6edf3; 
-      font-family:'Segoe UI',sans-serif; 
-      padding:30px;
-    }
-    h1 {
-      color:#58a6ff;
+    body {
+      background: #121212;
+      color:#e6edf3;
+      font-family:'Segoe UI',sans-serif;
       text-align:center;
-      margin-bottom:10px;
+      padding:40px;
     }
-    label {
-      display:block;
-      margin-top:10px;
-      font-weight:bold;
-    }
-    input[type="number"] {
-      width:80px;
-      padding:5px;
+    h1 { color:#58a6ff; margin-bottom:5px; }
+    h2 { font-weight:normal; font-size:1rem; color:#8b949e; margin-bottom:30px; }
+
+    p label { margin-right:10px; font-size:1rem; color:white; }
+    input[type=number] {
+      width:100px;
       font-size:1rem;
-      margin-left:10px;
+      padding:5px;
+      margin-right:5px;
     }
+
     #calcBtn {
       padding:6px 12px;
-      margin-left:10px;
-      background: linear-gradient(90deg, #58a6ff, #9b59b6);
-      color:#fff;
+      font-size:1rem;
       border:none;
       border-radius:6px;
+      background:#238636;
+      color:white;
       cursor:pointer;
-      transition:0.3s;
+      font-weight:bold;
+      transition:0.2s;
     }
-    #calcBtn:hover { opacity:0.85; }
+    #calcBtn:hover { background:#2ea043; }
+
     .round-buttons {
-      margin-top:15px;
-      text-align:center;
+      display:flex;
+      flex-wrap: wrap;
+      justify-content:center;
+      gap:10px;
+      margin:10px 0 20px 0;
     }
     .round-buttons button {
-      margin:5px;
-      padding:8px 14px;
-      border-radius:12px;
+      padding:10px 18px;
       border:none;
-      cursor:pointer;
-      background:#161b22;
-      color:#e6edf3;
+      border-radius:10px;
+      background: linear-gradient(145deg, #1b2730, #2c3e50);
+      color:white;
       font-weight:bold;
-      transition:0.3s;
+      cursor:pointer;
+      transition:0.25s;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
     }
-    .round-buttons button:hover { background:#1f2a36; }
-    .round-buttons button.active { background:#58a6ff; color:#121212; }
+    .round-buttons button:hover:not(:disabled) {
+      background: linear-gradient(145deg, #2c3e50, #1b2730);
+      box-shadow: 0 0 12px #58a6ff;
+    }
+    .round-buttons button.active {
+      background:#58a6ff;
+      box-shadow: 0 0 15px #58a6ff;
+    }
+    .round-buttons button:disabled {
+      opacity:0.5;
+      cursor:not-allowed;
+      background:#6e7681;
+    }
 
+    .results-container {
+      display:flex;
+      justify-content:center;
+      gap:20px;
+      flex-wrap: wrap;
+      margin-top:20px;
+      min-height: 50px;
+    }
     .dd-block {
-      display:inline-block;
-      vertical-align:top;
-      background:#161b22;
       border:1px solid #30363d;
       border-radius:12px;
       padding:15px;
-      margin:10px;
-      width:220px;
+      min-width:220px;
       text-align:left;
-      box-shadow:0 4px 10px rgba(0,0,0,0.4);
+      background:#161b22;
+      box-shadow:0 4px 12px rgba(0,0,0,0.4);
+      transition:0.2s;
     }
-    .dd-block h3 { margin:0 0 5px 0; color:#58a6ff; }
-    .dd-block p, .dd-block .small-text { font-size:0.85rem; color:#8b949e; margin:2px 0; }
-    .error-note { color:#ff5555; font-weight:bold; text-align:center; margin-top:10px; }
 
-    /* Top navigation button */
-    .nav-button {
-      text-align:right;
-      margin-bottom:15px;
+    .dd-block h3 {
+      margin-top:0;
+      margin-bottom:2px;
+      font-size:1.1rem;
     }
-    .nav-button a {
-      background: linear-gradient(90deg, #58a6ff, #9b59b6);
-      color:#fff;
-      padding:8px 14px;
-      border-radius:8px;
-      text-decoration:none;
-      font-weight:bold;
-      font-size:0.9rem;
-      transition:0.3s;
+
+    .current-stacks { 
+      font-size:0.85rem; 
+      color:#8b949e; 
+      margin-bottom:4px; 
+      margin-top:2px; 
     }
-    .nav-button a:hover { opacity:0.85; }
+    .next-cashout {
+      font-size:0.85rem; 
+      color:#8b949e; 
+      margin-top:1px;   /* tighter spacing */
+      margin-bottom:4px; 
+    }
+    .gain-base { color:#3fb950; font-weight:bold; }
+    .gain-kills { color:#f0c93d; font-weight:bold; }
+    .error-note { color:#f85149; font-size:1rem; text-align:center; }
+    .note { font-size:0.85rem; color:#8b949e; font-style:italic; margin-top:5px; }
+    p.total { margin-top:2px; font-weight:normal; } /* tighter spacing */
+    p.total b { color:#58a6ff; }
+    .label-white { color:white; } /* removed bold */
   </style>
 </head>
 <body>
-  <div class="nav-button">
-    <a href="ornn_tool.html">Go to Ornn Artifact Tool</a>
-  </div>
+  <h1>Should you Double Down?</h1>
+  <h2>A tool to help your Crystal Gambit cashout!</h2>
 
-  <h1>Crystal Gambit Tool</h1>
+  <p>
+    <label>Current stacks: 
+      <input type="number" id="currentStacks" min="0" value="">
+    </label>
 
-  <label>Current Stacks: <input type="number" id="currentStacks" min="0" value="0"></label>
-  <label>Avg. Kills per Round: <input type="number" id="avgKills" min="0" value="0"></label>
-  <button id="calcBtn">Calculate</button>
+    <label>Avg. kills per round: 
+      <input type="number" id="avgKills" min="0" value="0">
+    </label>
 
-  <div class="round-buttons">
-    <p>Doubling Down on:</p>
-    <button>2-1</button>
-    <button>2-2</button>
-    <button>2-3</button>
-    <button>2-5</button>
-    <button>2-6</button>
-    <button>2-7</button>
-    <button>3-2</button>
-    <button>3-3</button>
-    <button>3-5</button>
-    <button>3-6</button>
-    <button>3-7</button>
-    <button>4-2</button>
-    <button>4-3</button>
-    <button>4-5</button>
-    <button>4-6</button>
-    <button>4-7</button>
-  </div>
+    <button id="calcBtn">Calculate</button>
+  </p>
 
-  <div id="output" style="margin-top:20px;"></div>
+  <p class="label-white" style="margin-top:10px;">
+    Doubling Down on:
+  </p>
+  <div class="round-buttons" id="roundButtons"></div>
+
+  <div id="output" class="results-container"></div>
 
   <script>
-    const output = document.getElementById("output");
-
-    const stageData = {
-      2:{loss:26, kill:4},
-      3:{loss:32, kill:5},
-      4:{loss:48, kill:7},
-      5:{loss:48, kill:7},
-      6:{loss:48, kill:7},
-      7:{loss:48, kill:7}
+    const values = {
+      2: { loss: 26, kill: 4 },
+      3: { loss: 32, kill: 5 },
+      4: { loss: 48, kill: 7 },
+      5: { loss: 48, kill: 7 },
+      6: { loss: 48, kill: 7 },
+      7: { loss: 48, kill: 7 }
     };
 
     const breakpoints = [30,65,100,135,170,210,250,300,350,400,500,600,700,800,900,1000,1100,1200];
 
-    let activeStage = null;
+    const roundsByStage = {
+      2: ["2-1","2-2","2-3","2-5","2-6","2-7"],
+      3: ["3-1","3-2","3-3","3-5","3-6","3-7"],
+      4: ["4-1","4-2","4-3","4-5","4-6","4-7"]
+    };
 
-    document.querySelectorAll(".round-buttons button").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        document.querySelectorAll(".round-buttons button").forEach(b=>b.classList.remove("active"));
-        btn.classList.add("active");
-        activeStage = btn.textContent;
-        calculate(activeStage);
+    const selectableRounds = ["2-5","2-6","2-7","3-2","3-3","3-5","3-6","3-7","4-2","4-3","4-5","4-6","4-7"];
+    const allRounds = [].concat(...Object.values(roundsByStage));
+    const roundButtonsDiv = document.getElementById("roundButtons");
+    const output = document.getElementById("output");
+
+    allRounds.forEach(r => {
+      const btn = document.createElement("button");
+      btn.textContent = r;
+      if(!selectableRounds.includes(r)) btn.disabled = true;
+      btn.addEventListener("click", () => {
+        if(btn.disabled) return;
+        document.querySelectorAll(".round-buttons button").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active"); // immediately apply active color
+        calculate(r);
       });
+      roundButtonsDiv.appendChild(btn);
     });
 
-    function getStage(roundStr){ return parseInt(roundStr.split("-")[0]); }
-    function getNextRound(stage, round){
-      let seq = [1,2,3,5,6,7];
-      let idx = seq.indexOf(round);
-      if(idx===-1) idx=0;
+    function nextRound(stage, round) {
+      const rounds = roundsByStage[stage];
+      let idx = rounds.indexOf(round);
+      if (idx === -1) return [stage, rounds[0]];
       idx++;
-      if(idx>=seq.length){ stage++; idx=0; }
-      return [stage, seq[idx]];
+      if (idx >= rounds.length) {
+        stage++;
+        if (!roundsByStage[stage]) {
+          roundsByStage[stage] = [`${stage}-1`, `${stage}-2`, `${stage}-3`, `${stage}-5`, `${stage}-6`, `${stage}-7`];
+        }
+        return [stage, roundsByStage[stage][0]];
+      }
+      return [stage, rounds[idx]];
     }
-    function getBreakpoint(stacks){
-      let bp=0;
-      for(let i of breakpoints){
-        if(stacks>=i) bp=i;
-        else break;
+
+    function getBreakpoint(stacks) {
+      let bp = 0;
+      for (let i=0;i<breakpoints.length;i++){
+        if(stacks >= breakpoints[i]) bp = breakpoints[i];
       }
       return bp;
     }
 
-    function simulateDoubleDown(stage, round, stacks, avgKills){
-      let results=[];
-      let s=stacks;
-      let r=round;
-      let stg=stage;
-      let count=0;
-      while(count<3){
-        if(stg>4 && stg>7) break; // optional safety
-        s += stageData[stg].loss + (stageData[stg].kill * avgKills);
-        results.push({stage:stg, round:r, stacks:s});
-        [stg,r]=getNextRound(stg,r);
-        count++;
+    function getNextCashout(stacks){
+      for(let i=0;i<breakpoints.length;i++){
+        if(stacks < breakpoints[i]) return breakpoints[i];
       }
-      return results;
+      return "Max";
     }
 
-    function calculate(round){
-      output.innerHTML="";
-      const stacksVal = parseInt(document.getElementById("currentStacks").value);
-      const avgKills = parseInt(document.getElementById("avgKills").value);
+    function simulateDoubleDown(startStage, startRound, startingStacks, avgKills) {
+      let stacks = startingStacks;
+      let breakdown = [];
+      let turns = 0;
+      let currentStage = startStage;
+      let currentRound = startRound;
 
-      if(!stacksVal){ output.innerHTML='<div class="error-note">Enter some stacks first, FOOL</div>'; return; }
-      if(!round){ output.innerHTML='<div class="error-note">Choose a stage first, FOOL</div>'; return; }
+      while (turns < 3) {
+        if (!currentRound.endsWith("-7")) {
+          const base = values[currentStage].loss;
+          const kills = avgKills * values[currentStage].kill;
+          const gain = base + kills;
+          stacks += gain;
+          breakdown.push(`${currentRound} → ${stacks} (<span class="gain-base">+${base}</span>${kills>0 ? `+<span class="gain-kills">${kills}</span>` : ""})`);
+          turns++;
+        }
+        [currentStage, currentRound] = nextRound(currentStage, currentRound);
+      }
 
-      let stage = getStage(round);
-      let roundNum = parseInt(round.split("-")[1]);
+      return { stacks, breakdown, nextRound: currentRound, nextStage: currentStage };
+    }
 
-      let firstDD = simulateDoubleDown(stage, roundNum, stacksVal, avgKills);
-      let firstBP = getBreakpoint(firstDD[firstDD.length-1].stacks);
+    function calculate(selectedRound) {
+      let stacksInput = document.getElementById("currentStacks").value;
+      if(stacksInput === "" || parseInt(stacksInput) === 0){
+        output.style.display = 'flex';
+        output.innerHTML = `<div class="error-note">Enter some stacks first, FOOL</div>`;
+        return;
+      }
 
-      const createBlock = (title, currentStacks, ddArray, bp, noteText="")=>{
-        let block = document.createElement("div");
-        block.classList.add("dd-block");
-        let totalStacks = ddArray[ddArray.length-1].stacks;
-        let stacksToNext= breakpoints.find(b=>b>totalStacks) - totalStacks;
-        let nextBP= breakpoints.find(b=>b>totalStacks) || totalStacks;
-        block.innerHTML=`
+      const activeBtn = document.querySelector(".round-buttons button.active");
+      if(!activeBtn){
+        output.innerHTML = `<div class="error-note">Choose a stage first, FOOL</div>`;
+        return;
+      }
+
+      let stacks = parseInt(stacksInput);
+      let avgKills = parseInt(document.getElementById("avgKills").value) || 0;
+      let stage = parseInt(selectedRound.split("-")[0]);
+
+      output.style.display = 'flex';
+      output.innerHTML = '';
+
+      const firstDD = simulateDoubleDown(stage, selectedRound, stacks, avgKills);
+      const secondDD = simulateDoubleDown(firstDD.nextStage, firstDD.nextRound, firstDD.stacks, avgKills);
+      const thirdDD = simulateDoubleDown(secondDD.nextStage, secondDD.nextRound, secondDD.stacks, avgKills);
+
+      const firstBP = getBreakpoint(firstDD.stacks);
+      const secondBP = getBreakpoint(secondDD.stacks);
+      const thirdBP = getBreakpoint(thirdDD.stacks);
+
+      const createBlock = (title, currentStacks, ddObj, bp, noteText='') => {
+        const nextBP = getNextCashout(ddObj.stacks);
+        const stacksToNext = nextBP === "Max" ? "N/A" : nextBP - ddObj.stacks;
+        const block = document.createElement('div');
+        block.classList.add('dd-block');
+        block.innerHTML = `
           <h3>${title}</h3>
-          <p class="small-text">(Current stacks: ${currentStacks})</p>
-          ${ddArray.map(d=>`<p>${d.stage}-${d.round}: ${d.stacks}</p>`).join('')}
-          <p><b>Total: ${totalStacks} stacks</b></p>
-          <p class="small-text">(${stacksToNext} stacks away from ${nextBP} cashout)</p>
-          <p>Expected Cashout: <b>${bp}</b> <b>on</b> <b>${ddArray[ddArray.length-1].stage}-${ddArray[ddArray.length-1].round}</b></p>
+          <div class="current-stacks">(current stacks: ${currentStacks})</div>
+          <ul>${ddObj.breakdown.map(r => `<li>${r}</li>`).join('')}</ul>
+          <p class="total">Total: <b>${ddObj.stacks} stacks</b></p>
+          <div class="next-cashout">(${stacksToNext} stacks away from ${nextBP} cashout)</div>
+          <p>Expected Cashout: <b>${bp}</b> <b>on</b> <b>${ddObj.nextRound}</b></p>
           ${noteText}
         `;
         return block;
       };
 
-      output.appendChild(createBlock("Double Down", stacksVal, firstDD, firstBP));
+      output.appendChild(createBlock("Double Down", stacks, firstDD, firstBP));
+      output.appendChild(createBlock("Second Double Down", firstDD.stacks, secondDD, secondBP));
+      let note3 = stage === 4 ? `<div class="note">(but you're probably dead...)</div>` : '';
+      output.appendChild(createBlock("Third Double Down", secondDD.stacks, thirdDD, thirdBP, note3));
 
+      if(stage === 2) {
+        const fourthDD = simulateDoubleDown(thirdDD.nextStage, thirdDD.nextRound, thirdDD.stacks, avgKills);
+        const fourthBP = getBreakpoint(fourthDD.stacks);
+        output.appendChild(createBlock("Fourth Double Down", thirdDD.stacks, fourthDD, fourthBP));
+      }
     }
 
-    document.getElementById("calcBtn").addEventListener("click", ()=>{
+    document.getElementById("calcBtn").addEventListener("click", () => {
       const activeBtn = document.querySelector(".round-buttons button.active");
-      calculate(activeBtn?activeBtn.textContent:null);
+      const stacksVal = document.getElementById("currentStacks").value;
+      if(stacksVal === "" || parseInt(stacksVal) === 0){
+        output.innerHTML = `<div class="error-note">Enter some stacks first, FOOL</div>`;
+      } else if(!activeBtn){
+        output.innerHTML = `<div class="error-note">Choose a stage first, FOOL</div>`;
+      } else {
+        calculate(activeBtn.textContent);
+      }
     });
   </script>
 </body>
