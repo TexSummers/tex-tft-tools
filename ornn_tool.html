@@ -286,5 +286,43 @@ function calculateOdds(){
   resultPerc.innerHTML=`<b style="color:${color}">${(prob*100).toFixed(2)}%</b>`;
 }
 </script>
+  <!-- Right-side navigation buttons -->
+<div style="position:fixed; top:50%; right:20px; display:flex; flex-direction:column; gap:10px; z-index:1000;">
+  <a href="index.html" 
+     style="
+       background: linear-gradient(90deg, #238636, #2ea043);
+       color:#fff;
+       padding:10px 14px;
+       border-radius:8px;
+       text-decoration:none;
+       font-weight:bold;
+       text-align:center;
+       box-shadow:0 4px 12px rgba(0,0,0,0.5);
+       transition:0.3s;
+     "
+     onmouseover="this.style.opacity=0.85"
+     onmouseout="this.style.opacity=1">
+     Homepage
+  </a>
+
+  <a href="crystal_tool.html" 
+     style="
+       background: linear-gradient(90deg, #238636, #2ea043);
+       color:#fff;
+       padding:10px 14px;
+       border-radius:8px;
+       text-decoration:none;
+       font-weight:bold;
+       text-align:center;
+       box-shadow:0 4px 12px rgba(0,0,0,0.5);
+       transition:0.3s;
+     "
+     onmouseover="this.style.opacity=0.85"
+     onmouseout="this.style.opacity=1">
+     Go to Crystal Tool
+  </a>
+</div>
+
 </body>
 </html>
+
